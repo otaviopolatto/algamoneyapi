@@ -1,0 +1,18 @@
+Obs:. O nome do script SQL deve seguir obrigatoriamente o padrão de nomeação
+aplicado pois ao consultar no MySQL Workbench ou outra ferramenta do gênero os
+campos Version e Script aparecerão com suas respectivas nomeações corretamente 
+aplicadas. 
+
+A versão começa com um 0 na frente para nomear os arquivos corretamente. 
+
+Verifique os resultados consultando o tabela schema_version no MysqlWorkbench.
+
+Engine=InnoDB garante a consistência do banco, por exemplo ao tentar apagar uma
+categoria que esteja relacionado ao lançamento não será possível.
+
+Obs:. Depois de criar esta migração não se meche mais nela. No caso de uma futura
+correção cria-se uma nova migração.
+ 
+ Obs:. Houve falha ao implementar o arquivo sql com comentários, a tabela
+ categoria não foi criada. Por este motivo foi criado este arquivo de comentários
+ separado.
