@@ -17,8 +17,7 @@ import com.example.algamoney.api.repository.projection.ResumoLancamento;
 public interface LancamentoRepositoryQuery {
 	
 	/* Este método filtrar somente aparece nas classes pois LancamentoFilter extende-se a está 
-	 * interface também. 
-	 */
+	 * interface também. */
 	public Page<Lancamento> filtrar(LancamentoFilter lancamentoFilter, Pageable pageable);
 	
 	public Page<ResumoLancamento> resumir(LancamentoFilter lancamentoFilter, Pageable pageable);

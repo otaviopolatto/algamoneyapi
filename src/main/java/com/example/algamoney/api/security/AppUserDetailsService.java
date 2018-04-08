@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.algamoney.api.model.Usuario;
 import com.example.algamoney.api.repository.UsuarioRepository;
+import com.example.algamoney.api.util.UsuarioSistema;
 
 /* Classe de implementação do UserDetailsService */
 
@@ -31,7 +32,9 @@ public class AppUserDetailsService implements UserDetailsService {
 		
 		Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(email);
 		Usuario usuario = usuarioOptional.orElseThrow(() -> new UsernameNotFoundException("Usuário e/ou senha incorretos !"));
-		return new User(email, usuario.getSenha(), getPermissoes(usuario));
+		//return new User(email, usuario.getSenha(), getPermissoes(usuario));
+		/* Após a aula 7.5 passa a retornar um User do tipo UsuarioSistema */
+		return new UsuarioSistema(usuario, getPermissoes(usuario));
 		/* Com o método abaixo o Spring faz a validação se o usuário e senha estão corretos */
 	}
 

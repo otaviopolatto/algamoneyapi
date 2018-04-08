@@ -22,7 +22,7 @@ import com.example.algamoney.api.repository.filter.LancamentoFilter;
 import com.example.algamoney.api.repository.projection.ResumoLancamento;
 
 
-/* Classe de implementação do méotodo filtrar do LancamentoRepositoryQuery */
+/* Classe de implementação do método filtrar do LancamentoRepositoryQuery */
 
 /* Obs:. Importar sempre do javax.persistence */
 
@@ -57,8 +57,7 @@ public class LancamentoRepositoryImpl implements LancamentoRepositoryQuery {
 		adicionarRestricoesDePaginacao(query, pageable);
 				
 		/* O retorno PageImpl é uma implementação do Page que retorna o 
-		 * conteúdo, o pageable e o total (qtde de elem. deste filtro)		 * 
-		 */
+		 * conteúdo, o pageable e o total (qtde de elem. deste filtro) */
 		return new PageImpl<>(query.getResultList(), pageable, total(lancamentoFilter));	
 		
 		

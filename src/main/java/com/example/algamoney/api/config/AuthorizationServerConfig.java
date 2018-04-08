@@ -1,19 +1,27 @@
 package com.example.algamoney.api.config;
 
+import java.util.Arrays;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.provider.token.AccessTokenConverter;
+import org.springframework.security.oauth2.provider.token.TokenEnhancer;
+import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.InMemoryTokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 
+import com.example.algamoney.api.config.token.CustomTokenEnhancer;
+
+@Profile("oauth-security")
 @Configuration
 @EnableAuthorizationServer /* Diz que está é uma classe de autorização do servidor */
 public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
@@ -55,9 +63,14 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 	
 	@Override
 	public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
-		//super.configure(endpoints);
+		
+		/* Criação de um objeto Token com mais detalhes, tokenEnhancerChain */
+		TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
+		tokenEnhancerChain.setTokenEnhancers(Arrays.asList(tokenEnhancer(), accessTokenConverter()));
+		
 		endpoints
 			.tokenStore(tokenStore()) /* Token precisa ser armazendo em algum lugar */
+			.tokenEnhancer(tokenEnhancerChain) /* Objeto tokenEnhancerChain, que é o token personalizado */
 			.accessTokenConverter(accessTokenConverter()) /* Especificação do conversor de Token */
 			.reuseRefreshTokens(false) /* Evita a reutilização de um mesmo RefreshToken, ou seja a 
 			cada requisição é sempre gerado um novo refreshToken. Caso a reutilização fosse verdadeira
@@ -80,6 +93,12 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 	@Bean
 	public TokenStore tokenStore() {
 		return new JwtTokenStore(accessTokenConverter());
+	}
+	
+	@Bean
+	public TokenEnhancer tokenEnhancer() {
+		/* Retorna um cara customizado que vai incrementar o Token */
+		return new CustomTokenEnhancer();
 	}
 
 }

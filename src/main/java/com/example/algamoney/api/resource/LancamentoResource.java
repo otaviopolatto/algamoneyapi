@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -37,89 +38,97 @@ import com.example.algamoney.api.service.exception.PessoaInexistenteOuInativaExc
 @RestController
 @RequestMapping("/lancamentos")
 public class LancamentoResource {
-	
+
 	@Autowired
 	private LancamentoRepository lancamentoRepository;
-	
+
 	@Autowired
 	private LancamentoService lancamentoService;
-	
+
 	@Autowired
 	private ApplicationEventPublisher publisher;
-	
+
 	@Autowired
 	private MessageSource messageSource;
-	
-	/* 
-	 * @GetMapping
-		public List<Lancamento> pesquisar(LancamentoFilter lancamentoFilter) {
-			return lancamentoRepository.findAll();
-		}
-		Substítuido pelo método abaixo: 
-	*/
-	
-	/* Obs:. Importar Pageable e Page do org.springframework
-	 * Método pesquisa é alterado de List para Page pois deve-se passar
-	 * mais informaçoes como a página atual número de registros por 
-	 * página etc. O Spring nos fornece estás informações.
+
+	/*
+	 * @GetMapping public List<Lancamento> pesquisar(LancamentoFilter
+	 * lancamentoFilter) { return lancamentoRepository.findAll(); } Substítuido pelo
+	 * método abaixo:
 	 */
-	
-	/* Método que faz as pesquisas */	
-	@GetMapping	
+
+	/*
+	 * Obs:. Importar Pageable e Page do org.springframework Método pesquisa é
+	 * alterado de List para Page pois deve-se passar mais informaçoes como a página
+	 * atual número de registros por página etc. O Spring nos fornece estás
+	 * informações.
+	 */
+
+	/* Método que faz as pesquisas */
+	@GetMapping
 	@PreAuthorize("hasAuthority('ROLE_PESQUISAR_LANCAMENTO') and #oauth2.hasScope('read')")
-	public Page<Lancamento> pesquisar(LancamentoFilter lancamentoFilter, Pageable pageable ) {
+	public Page<Lancamento> pesquisar(LancamentoFilter lancamentoFilter, Pageable pageable) {
 		return lancamentoRepository.filtrar(lancamentoFilter, pageable);
-	}	
-	
+	}
+
 	/* Método que retorna as pesquisas de forma resumida */
-	/* Se houver um parâmetro chamado resumo na requisição chama este método, caso
-	 * contrário chama o método acima */
-	@GetMapping	(params = "resumo")
+	/*
+	 * Se houver um parâmetro chamado resumo na requisição chama este método, caso
+	 * contrário chama o método acima
+	 */
+	@GetMapping(params = "resumo")
 	@PreAuthorize("hasAuthority('ROLE_PESQUISAR_LANCAMENTO') and #oauth2.hasScope('read')")
-	public Page<ResumoLancamento> resumir(LancamentoFilter lancamentoFilter, Pageable pageable ) {
+	public Page<ResumoLancamento> resumir(LancamentoFilter lancamentoFilter, Pageable pageable) {
 		return lancamentoRepository.resumir(lancamentoFilter, pageable);
 	}
-	
+
 	@GetMapping("/{codigo}")
 	@PreAuthorize("hasAuthority('ROLE_PESQUISAR_LANCAMENTO') and #oauth2.hasScope('read')")
 	public ResponseEntity<Lancamento> buscarPeloCodigo(@PathVariable Long codigo) {
 		Lancamento lancamento = lancamentoRepository.findOne(codigo);
 		return lancamento != null ? ResponseEntity.ok(lancamento) : ResponseEntity.notFound().build();
 	}
-	
+
 	@PostMapping
-	@ResponseStatus(HttpStatus.CREATED) //201 CREATED
+	@ResponseStatus(HttpStatus.CREATED) // 201 CREATED
 	@PreAuthorize("hasAuthority('ROLE_CADASTRAR_LANCAMENTO') and #oauth2.hasScope('write')")
-	public ResponseEntity<Lancamento> criar(@Valid @RequestBody Lancamento lancamento,
-			HttpServletResponse response) {
-		
-		Lancamento lancamentoSalvo = lancamentoService.salvar(lancamento);		
+	public ResponseEntity<Lancamento> criar(@Valid @RequestBody Lancamento lancamento, HttpServletResponse response) {
+
+		Lancamento lancamentoSalvo = lancamentoService.salvar(lancamento);
 		publisher.publishEvent(new RecursoCriadoEvent(this, response, lancamentoSalvo.getCodigo()));
 		return ResponseEntity.status(HttpStatus.CREATED).body(lancamentoSalvo);
 	}
-	
+
 	@DeleteMapping("/{codigo}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@PreAuthorize("hasAuthority('ROLE_REMOVER_LANCAMENTO') and #oauth2.hasScope('write')")
 	public void remover(@PathVariable Long codigo) {
 		lancamentoRepository.delete(codigo);
 	}
-	
-	
-	@ExceptionHandler({PessoaInexistenteOuInativaException.class})
-	public ResponseEntity<Object> handlePessoaInexistenteOuInativaException(
-			PessoaInexistenteOuInativaException ex) {
-		
+
+	@PutMapping("/{codigo}")
+	public ResponseEntity<Lancamento> atualizar(@PathVariable Long codigo, @Valid @RequestBody Lancamento lancamento) {
+
+		/* Chama a função de atualização na classe de serviço */
+		try {
+			Lancamento lancamentoSalvo = lancamentoService.atualizar(codigo, lancamento);
+			return ResponseEntity.ok(lancamentoSalvo);
+		} catch (IllegalArgumentException e) {
+			return ResponseEntity.notFound().build();
+		}
+
+	}
+
+	@ExceptionHandler({ PessoaInexistenteOuInativaException.class })
+	public ResponseEntity<Object> handlePessoaInexistenteOuInativaException(PessoaInexistenteOuInativaException ex) {
+
 		String mensagemUsuario = messageSource.getMessage("pessoa.inexistente-ou-inativa", null,
 				LocaleContextHolder.getLocale());
 		String mensagemDesenvolvedor = ex.toString();
-		//Retorno do body com os erros
+		// Retorno do body com os erros
 		List<Erro> erros = Arrays.asList(new Erro(mensagemUsuario, mensagemDesenvolvedor));
 		return ResponseEntity.badRequest().body(erros);
-		
+
 	}
-	
-	
-	
 
 }
