@@ -20,7 +20,7 @@ import com.example.algamoney.api.util.UsuarioSistema;
 
 /* Classe de implementação do UserDetailsService */
 
-@Service /* Annotationq que indica que está classe é de um componente do String */
+@Service /* Annotation que indica que está classe é de um componente do String */
 public class AppUserDetailsService implements UserDetailsService {
 
 	
