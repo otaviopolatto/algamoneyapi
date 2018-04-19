@@ -24,9 +24,6 @@ import com.example.algamoney.api.config.property.AlgamoneyApiProperty;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class CorsFilter implements Filter{
 	
-	//Overriden
-	/* Para produção é uma coisa para teste é outra */
-	//private String origimPermitida = "http://localhost:8000"; // Configurar para diferentes ambientes
 	
 	@Autowired
 	private AlgamoneyApiProperty algamoneyApiProperty;
